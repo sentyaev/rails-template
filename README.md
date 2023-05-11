@@ -1,17 +1,30 @@
 # README
 
 ## Project creation
-### Generate app
-Generated: `rails new turbotest -c bootstrap -T`
+### Generate app 
+To create rails app with Bootstrap and without test support: 
+```bash
+rails new turbotest -c bootstrap -T
+```
+
+### Scuffold Post
+```bash
+bin/rails g scaffold post title:string content:text
+```
+Migrate db: 
+```bash
+bin/rails db:migrate
+```
+
 ### Configure RSpec
 Add to Gemfile:
-```
+```gemfile
 gem "rspec-rails"
 gem "factory_bot_rails"
 gem "faker"
 ```
 Run:
-```
+```bash
 bundle install
 rails g rspec:install
 ```
@@ -68,6 +81,69 @@ RSpec.describe Post, type: :model do
 end
 ```
 Run `rspec` in console to test everything is working
+
+## Configure DB
+Create `docker-compose.yaml` with following content:
+```yaml
+version: '3.6'
+
+services:
+  db:
+    image: postgres:14.7-alpine
+    restart: always
+    volumes:
+      - pgdata:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - 5432:5432
+
+volumes:
+  pgdata:
+```
+Update `config/database.yaml` with following content:
+```yaml
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  host: <%= ENV.fetch("DB_HOST") { "localhost" } %>
+  port: 5432
+  username: postgres
+  password: postgres
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  timeout: 5000
+
+development:
+  <<: *default
+  database: <%= ENV.fetch("DB_NAME") { "postgres" } %>
+  
+# Warning: The database defined as "test" will be erased and
+# re-generated from your development database when you run "rake".
+# Do not set this db to the same as development or production.
+test:
+  <<: *default
+  database: postgres_test
+  
+
+production:
+  <<: *default
+  database: postgres
+```
+Replace in `Gemfile`:
+```diff
+- gem "sqlite3", "~> 1.4"
++ gem "pg", "~> 1.4"
+```
+Install dependency:
+```bash
+brew install postgresql
+bundle install
+# migrate db again, because we changed db
+bin/rails db:migrate
+```
+
 
 ## Stuff
 This README would normally document whatever steps are necessary to get the
