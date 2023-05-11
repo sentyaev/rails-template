@@ -82,7 +82,7 @@ end
 ```
 Run `rspec` in console to test everything is working
 
-## Configure DB
+### Configure DB
 Create `docker-compose.yaml` with following content:
 ```yaml
 version: '3.6'
