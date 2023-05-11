@@ -1,0 +1,25 @@
+<p style="color: green"><%= notice %></p>
+
+<h1>Posts</i></h1>
+
+<div id="posts">
+  <% @posts.each do |post| %>
+    <%= render post %>
+    <p>
+      <%= link_to "Show this post", post %> <i class="bi bi-arrow-right"></i>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New post", new_post_path %>
+
+<div class="dropdown">
+  <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Select Post
+  </button>
+  <ul class="dropdown-menu">
+    <% @posts.each do |post| %>
+      <li><a class="dropdown-item" href="<%= post_path(post) %>"><%= post.title %></a></li>
+    <% end %>
+  </ul>
+</div>
