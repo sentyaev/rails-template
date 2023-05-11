@@ -1,6 +1,12 @@
 # README
 
 ## Project creation
+### Install Node and Yarn
+```bash
+brew install node
+npm install -g yarn
+```
+
 ### Generate app 
 To create rails app with Bootstrap and without test support: 
 ```bash
