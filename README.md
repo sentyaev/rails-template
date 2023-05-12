@@ -149,3 +149,76 @@ bundle install
 # migrate db again, because we changed db
 bin/rails db:migrate
 ```
+
+### Configure Elastic
+Add Elastic dependencies to `Gemfile`:
+```gemfile
+# elastic search
+gem 'elasticsearch-model', '~> 7.2', '>= 7.2.1'
+gem 'elasticsearch-rails', '~> 7.2', '>= 7.2.1'
+```
+Install new dependencies:
+```bash
+bundle install
+```
+Create file `config/initializers/elasticsearch.rb` with content:
+```ruby
+# Connect to specific Elasticsearch cluster
+ELASTICSEARCH_URL = ENV['ELASTICSEARCH_URL'] || 'http://localhost:9200'
+
+Elasticsearch::Model.client = Elasticsearch::Client.new host: ELASTICSEARCH_URL
+```
+Add Elastic to `docker-compose.yaml`
+```diff
+version: '3.6'
+
+services:
+  db:
+    ...
++  es:
++    image: elasticsearch:7.17.9
++    environment:
++      - xpack.security.enabled=false
++      - discovery.type=single-node
++    volumes:
++      - esdata:/usr/share/elasticsearch/data
++    ports:
++      - 9200:9200
++      - 9300:9300
+
+volumes:
+  ...
++  esdata:
++    driver: local
+```
+Create concern for elastic models:
+```ruby
+# app/models/concerns/searchable.rb
+
+module Searchable
+    extend ActiveSupport::Concern
+  
+    included do
+        include Elasticsearch::Model
+        include Elasticsearch::Model::Callbacks
+
+        # index name will depend on the environment
+        index_name [Rails.env, model_name.collection.underscore].join('_')
+
+        # mapping do
+        #     # mapping definition goes here
+        # end
+
+        # def self.search(query)
+        #     # build and run search
+        # end
+    end
+end
+```
+Update `Post` model
+```ruby
+class Post < ApplicationRecord
+    include Searchable
+end
+```
+Restart applicacation with `bin/dev`, create some Post entries with app and check that index created in elastic (http://localhost:9200/development_posts)

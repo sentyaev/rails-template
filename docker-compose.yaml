@@ -13,5 +13,18 @@ services:
     ports:
       - 5432:5432
 
+  es:
+    image: elasticsearch:7.17.9
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9300:9300
+
 volumes:
   pgdata:
+  esdata:
+    driver: local
